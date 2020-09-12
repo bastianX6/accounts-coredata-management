@@ -10,3 +10,6 @@ This package implements the protocols from [DataManagement](https://github.com/b
 ## Persistence Controller
 
 The `PersistenceController` is a singleton that manages the `CoreData` persistent container initialization. It uses a `NSPersistentCloudKitContainer` instance.
+
+## Documentation
+You can check documentation [here](https://bastianx6.github.io/accounts-coredata-management/)

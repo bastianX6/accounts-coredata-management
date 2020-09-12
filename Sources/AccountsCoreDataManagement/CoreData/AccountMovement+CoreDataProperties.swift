@@ -10,17 +10,17 @@ import CoreData
 import Foundation
 
 extension AccountMovement {
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<AccountMovement> {
+    @nonobjc class func fetchRequest() -> NSFetchRequest<AccountMovement> {
         return NSFetchRequest<AccountMovement>(entityName: "AccountMovement")
     }
 
-    @NSManaged public var amount: Float
-    @NSManaged public var categoryId: UUID?
-    @NSManaged public var date: Date?
-    @NSManaged public var id: UUID?
-    @NSManaged public var isPaid: Bool
-    @NSManaged public var movementDescription: String
-    @NSManaged public var name: String
-    @NSManaged public var paymentId: UUID?
-    @NSManaged public var storeId: UUID?
+    @NSManaged var amount: Float
+    @NSManaged var categoryId: UUID?
+    @NSManaged var date: Date?
+    @NSManaged var id: UUID?
+    @NSManaged var isPaid: Bool
+    @NSManaged var movementDescription: String
+    @NSManaged var name: String
+    @NSManaged var paymentId: UUID?
+    @NSManaged var storeId: UUID?
 }

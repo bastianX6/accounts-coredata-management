@@ -11,7 +11,7 @@ import DataManagement
 import Foundation
 
 @objc(AccountMovement)
-public class AccountMovement: NSManagedObject {
+class AccountMovement: NSManagedObject {
     func getMovement() -> Movement? {
         return MovementAdapter(movement: self)
     }
