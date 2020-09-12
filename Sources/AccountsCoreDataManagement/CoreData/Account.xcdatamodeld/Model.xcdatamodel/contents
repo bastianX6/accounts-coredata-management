@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17189" systemVersion="19G2021" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="AccountMovement" representedClassName="AccountMovement" syncable="YES">
+        <attribute name="amount" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="categoryId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isPaid" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="movementDescription" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="paymentId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="storeId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+    <elements>
+        <element name="AccountMovement" positionX="-63" positionY="-18" width="128" height="178"/>
+    </elements>
+</model>
