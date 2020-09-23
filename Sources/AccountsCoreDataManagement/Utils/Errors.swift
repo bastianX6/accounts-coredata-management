@@ -9,4 +9,5 @@ import Foundation
 
 enum CoreDataSourceError: Error {
     case noResults
+    case wrongQuery
 }

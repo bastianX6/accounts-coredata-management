@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "DataManagement",
-        "repositoryURL": "https://github.com/bastianX6/accounts-data-management.git",
-        "state": {
-          "branch": null,
-          "revision": "68ffeb7777495e6d23b30320719182a0ea59ec29",
-          "version": "1.0.1"
-        }
-      },
-      {
         "package": "CombineCoreData",
         "repositoryURL": "https://github.com/Alexander-Ignition/CombineCoreData",
         "state": {
