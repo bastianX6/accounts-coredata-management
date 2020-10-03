@@ -15,6 +15,7 @@ struct MockMovement: Movement {
     var amount: Float = 0
     var date: Date = Date()
     var isPaid: Bool = false
+    var isPermanent: Bool = false
     var storeId: UUID = UUID()
     var categoryId: UUID = UUID()
     var paymentId: UUID?

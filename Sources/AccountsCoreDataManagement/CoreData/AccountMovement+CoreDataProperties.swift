@@ -19,6 +19,7 @@ extension AccountMovement {
     @NSManaged var date: Date?
     @NSManaged var id: UUID?
     @NSManaged var isPaid: Bool
+    @NSManaged var isPermanent: Bool
     @NSManaged var movementDescription: String
     @NSManaged var name: String
     @NSManaged var paymentId: UUID?

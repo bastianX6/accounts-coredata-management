@@ -1,6 +1,6 @@
 @testable import AccountsCoreDataManagement
-import XCTest
 import CoreData
+import XCTest
 
 final class CoreDataSourceModifyTests: XCTestCase {
     static var allTests = [
@@ -101,6 +101,7 @@ final class CoreDataSourceModifyTests: XCTestCase {
         otherMockMovement.description = "description"
         otherMockMovement.amount = 666
         otherMockMovement.isPaid = true
+        otherMockMovement.isPermanent = true
 
         let updateResult = dataSource
             .update(movement: otherMockMovement)
