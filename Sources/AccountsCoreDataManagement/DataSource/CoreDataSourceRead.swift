@@ -113,8 +113,7 @@ public class CoreDataSourceRead: DataSourceRead {
         let publisher = context
             .fetchPublisher(fetchRequest)
             .map { movements -> [MovementsSum] in
-                print("Movements: \(String(describing: movements))")
-                return movements.compactMap { MovementSumAdapter(dict: $0, type: propertyType) }
+                movements.compactMap { MovementSumAdapter(dict: $0, type: propertyType) }
             }.eraseToAnyPublisher()
 
         return publisher
