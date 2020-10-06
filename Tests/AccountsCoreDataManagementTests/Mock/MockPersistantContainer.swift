@@ -6,6 +6,7 @@
 //
 
 @testable import AccountsCoreDataManagement
+import CombineCoreData
 import CoreData
 import Foundation
 
@@ -28,13 +29,13 @@ class MockPersistantContainer {
     lazy var container: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "CoreDataUnitTesting", managedObjectModel: self.managedObjectModel)
         let description = NSPersistentStoreDescription()
-        description.type = NSInMemoryStoreType
+        description.type = NSSQLiteStoreType
         description.configuration = "Default"
         description.shouldAddStoreAsynchronously = false
 
         container.persistentStoreDescriptions = [description]
         container.loadPersistentStores { storeDescription, error in
-            precondition(storeDescription.type == NSInMemoryStoreType)
+            precondition(storeDescription.type == NSSQLiteStoreType)
             if let error = error {
                 fatalError("Error loading persistent stores: \(String(describing: error))")
             } else {
@@ -53,11 +54,20 @@ class MockPersistantContainer {
     private func deleteEntity(name: String) throws {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: name)
         fetchRequest.returnsObjectsAsFaults = false
-        let results = try container.viewContext.fetch(fetchRequest)
-        for object in results {
-            guard let objectData = object as? NSManagedObject else { continue }
-            self.container.viewContext.delete(objectData)
-        }
-        try self.container.viewContext.save()
+
+        let publisher = self.container.viewContext
+            .fetchPublisher(fetchRequest)
+            .tryMap { elements -> Void in
+                elements.forEach {
+                    guard let objectData = $0 as? NSManagedObject else { return }
+                    self.container.viewContext.delete(objectData)
+                }
+                try self.container.viewContext.save()
+            }.eraseToAnyPublisher()
+
+        let result = publisher.wait(timeout: 5)
+
+        guard let error = result.error else { return }
+        throw error
     }
 }

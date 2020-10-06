@@ -73,4 +73,49 @@ public class CoreDataSourceRead: DataSourceRead {
 
         return publisher
     }
+
+    /// Get the sum of movements grouped by category
+    /// - Parameter query: query parameters
+    /// - Returns: A publisher containing the fetch logic
+    public func getMovementSumByCategory(query: ReadMovementsQuery) -> AnyPublisher<[MovementsSum], Error> {
+        return self.getMovementSum(propertyType: .categoryId, query: query)
+    }
+
+    /// Get the sum of movements grouped by store
+    /// - Parameter query: query parameters
+    /// - Returns: A publisher containing the fetch logic
+    public func getMovementSumByStore(query: ReadMovementsQuery) -> AnyPublisher<[MovementsSum], Error> {
+        return self.getMovementSum(propertyType: .storeId, query: query)
+    }
+
+    /// Get the sum of movements grouped by store
+    /// - Parameter propertyType: defines the property used in `group by`
+    /// - Parameter query: query parameters
+    /// - Returns: A publisher containing the fetch logic
+    private func getMovementSum(propertyType: MovementSumType, query: ReadMovementsQuery) -> AnyPublisher<[MovementsSum], Error> {
+        let context = self.persistentContainer.newBackgroundContext()
+        let propertyToGroup = propertyType.rawValue
+
+        let keypathExp = NSExpression(forKeyPath: "amount")
+        let expression = NSExpression(forFunction: "sum:", arguments: [keypathExp])
+        let sumDescription = NSExpressionDescription()
+        sumDescription.expression = expression
+        sumDescription.name = "sum"
+        sumDescription.expressionResultType = .floatAttributeType
+
+        let fetchRequest = NSFetchRequest<NSDictionary>(entityName: entityName)
+        fetchRequest.predicate = query.predicate
+        fetchRequest.returnsObjectsAsFaults = false
+        fetchRequest.propertiesToFetch = [sumDescription, propertyToGroup]
+        fetchRequest.propertiesToGroupBy = [propertyToGroup]
+        fetchRequest.resultType = .dictionaryResultType
+
+        let publisher = context
+            .fetchPublisher(fetchRequest)
+            .map { movements -> [MovementsSum] in
+                movements.compactMap { MovementSumAdapter(dict: $0, type: propertyType) }
+            }.eraseToAnyPublisher()
+
+        return publisher
+    }
 }

@@ -206,6 +206,338 @@ final class CoreDataSourceReadTests: XCTestCase {
         XCTAssertEqual(movements.count, 1)
     }
 
+    // MARK: - Sum methods
+
+    func testGetMovementSumByCategory() throws {
+        guard let dataSource = self.sut else {
+            XCTFail("Data source is not initialized")
+            return
+        }
+
+        // create and add mock movements
+
+        let categoryId = UUID()
+        let mockMovement1 = MockMovement(amount: 100, categoryId: categoryId)
+        let mockMovement2 = MockMovement(amount: 200, categoryId: categoryId)
+        let mockMovement3 = MockMovement(amount: 300, categoryId: categoryId)
+        let mockMovement4 = MockMovement(amount: 400, categoryId: categoryId)
+
+        let result1 = self.addMovement(mockMovement: mockMovement1)
+        let result2 = self.addMovement(mockMovement: mockMovement2)
+        let result3 = self.addMovement(mockMovement: mockMovement3)
+        let result4 = self.addMovement(mockMovement: mockMovement4)
+
+        XCTAssertNil(result1.error)
+        XCTAssertNil(result2.error)
+        XCTAssertNil(result3.error)
+        XCTAssertNil(result4.error)
+
+        // query sum
+        let query = ReadMovementsQuery(fromDate: Date(timeIntervalSince1970: 0),
+                                       toDate: Date())
+
+        let sum = try dataSource
+            .getMovementSumByCategory(query: query)
+            .wait(timeout: 5)
+            .single()
+
+        XCTAssertEqual(sum.count, 1)
+
+        guard let firstElement = sum.first else {
+            XCTFail("Couldn't get first array value")
+            return
+        }
+
+        XCTAssertEqual(firstElement.id, categoryId)
+        XCTAssertEqual(firstElement.sum, mockMovement1.amount
+            + mockMovement2.amount
+            + mockMovement3.amount
+            + mockMovement4.amount)
+    }
+
+    func testGetMovementSumByCategoryMultiple() throws {
+        guard let dataSource = self.sut else {
+            XCTFail("Data source is not initialized")
+            return
+        }
+
+        // create and add mock movements
+
+        let categoryId1 = UUID()
+        let categoryId2 = UUID()
+        let mockMovement1 = MockMovement(amount: 100, categoryId: categoryId1)
+        let mockMovement2 = MockMovement(amount: 200, categoryId: categoryId1)
+        let mockMovement3 = MockMovement(amount: 300, categoryId: categoryId2)
+        let mockMovement4 = MockMovement(amount: 400, categoryId: categoryId2)
+
+        let result1 = self.addMovement(mockMovement: mockMovement1)
+        let result2 = self.addMovement(mockMovement: mockMovement2)
+        let result3 = self.addMovement(mockMovement: mockMovement3)
+        let result4 = self.addMovement(mockMovement: mockMovement4)
+
+        XCTAssertNil(result1.error)
+        XCTAssertNil(result2.error)
+        XCTAssertNil(result3.error)
+        XCTAssertNil(result4.error)
+
+        // query sum
+        let query = ReadMovementsQuery(fromDate: Date(timeIntervalSince1970: 0),
+                                       toDate: Date())
+
+        var sum = try dataSource
+            .getMovementSumByCategory(query: query)
+            .wait(timeout: 5)
+            .single()
+
+        sum.sort(by: { $0.sum < $1.sum })
+
+        XCTAssertEqual(sum.count, 2)
+
+        guard let firstElement = sum.first else {
+            XCTFail("Couldn't get first array value")
+            return
+        }
+
+        guard let lastElement = sum.last else {
+            XCTFail("Couldn't get last array value")
+            return
+        }
+
+        XCTAssertEqual(firstElement.id, categoryId1)
+        XCTAssertEqual(firstElement.sum, mockMovement1.amount + mockMovement2.amount)
+
+        XCTAssertEqual(lastElement.id, categoryId2)
+        XCTAssertEqual(lastElement.sum, mockMovement3.amount + mockMovement4.amount)
+    }
+
+    func testGetMovementSumByCategoryTimeInterval() throws {
+        guard let dataSource = self.sut else {
+            XCTFail("Data source is not initialized")
+            return
+        }
+
+        let dateFormat = DateFormatter()
+        dateFormat.dateFormat = "yyyy-MM-dd"
+        guard let movementDate = dateFormat.date(from: "2018-02-01"),
+            let startingDate = dateFormat.date(from: "2019-01-01") else {
+            XCTFail("Can't get dates")
+            return
+        }
+
+        // create and add mock movements
+
+        let categoryId1 = UUID()
+        let categoryId2 = UUID()
+        let mockMovement1 = MockMovement(amount: 100, date: movementDate, categoryId: categoryId1)
+        let mockMovement2 = MockMovement(amount: 200, date: movementDate, categoryId: categoryId2)
+        let mockMovement3 = MockMovement(amount: 300, categoryId: categoryId1)
+        let mockMovement4 = MockMovement(amount: 400, categoryId: categoryId2)
+
+        let result1 = self.addMovement(mockMovement: mockMovement1)
+        let result2 = self.addMovement(mockMovement: mockMovement2)
+        let result3 = self.addMovement(mockMovement: mockMovement3)
+        let result4 = self.addMovement(mockMovement: mockMovement4)
+
+        XCTAssertNil(result1.error)
+        XCTAssertNil(result2.error)
+        XCTAssertNil(result3.error)
+        XCTAssertNil(result4.error)
+
+        // query sum
+        let query = ReadMovementsQuery(fromDate: startingDate,
+                                       toDate: Date())
+
+        var sum = try dataSource
+            .getMovementSumByCategory(query: query)
+            .wait(timeout: 5)
+            .single()
+
+        sum.sort(by: { $0.sum < $1.sum })
+
+        XCTAssertEqual(sum.count, 2)
+
+        guard let firstElement = sum.first else {
+            XCTFail("Couldn't get first array value")
+            return
+        }
+
+        guard let lastElement = sum.last else {
+            XCTFail("Couldn't get last array value")
+            return
+        }
+
+        XCTAssertEqual(firstElement.id, categoryId1)
+        XCTAssertEqual(firstElement.sum, mockMovement3.amount)
+
+        XCTAssertEqual(lastElement.id, categoryId2)
+        XCTAssertEqual(lastElement.sum, mockMovement4.amount)
+    }
+
+    func testGetMovementSumByStore() throws {
+        guard let dataSource = self.sut else {
+            XCTFail("Data source is not initialized")
+            return
+        }
+
+        // create and add mock movements
+
+        let storeId = UUID()
+        let mockMovement1 = MockMovement(amount: 100, storeId: storeId)
+        let mockMovement2 = MockMovement(amount: 200, storeId: storeId)
+        let mockMovement3 = MockMovement(amount: 300, storeId: storeId)
+        let mockMovement4 = MockMovement(amount: 400, storeId: storeId)
+
+        let result1 = self.addMovement(mockMovement: mockMovement1)
+        let result2 = self.addMovement(mockMovement: mockMovement2)
+        let result3 = self.addMovement(mockMovement: mockMovement3)
+        let result4 = self.addMovement(mockMovement: mockMovement4)
+
+        XCTAssertNil(result1.error)
+        XCTAssertNil(result2.error)
+        XCTAssertNil(result3.error)
+        XCTAssertNil(result4.error)
+
+        // query sum
+        let query = ReadMovementsQuery(fromDate: Date(timeIntervalSince1970: 0),
+                                       toDate: Date())
+
+        let sum = try dataSource
+            .getMovementSumByStore(query: query)
+            .wait(timeout: 5)
+            .single()
+
+        XCTAssertEqual(sum.count, 1)
+
+        guard let firstElement = sum.first else {
+            XCTFail("Couldn't get first array value")
+            return
+        }
+
+        XCTAssertEqual(firstElement.id, storeId)
+        XCTAssertEqual(firstElement.sum, mockMovement1.amount
+            + mockMovement2.amount
+            + mockMovement3.amount
+            + mockMovement4.amount)
+    }
+
+    func testGetMovementSumByStoreMultiple() throws {
+        guard let dataSource = self.sut else {
+            XCTFail("Data source is not initialized")
+            return
+        }
+
+        // create and add mock movements
+
+        let storeId1 = UUID()
+        let storeId2 = UUID()
+        let mockMovement1 = MockMovement(amount: 100, storeId: storeId1)
+        let mockMovement2 = MockMovement(amount: 200, storeId: storeId1)
+        let mockMovement3 = MockMovement(amount: 300, storeId: storeId2)
+        let mockMovement4 = MockMovement(amount: 400, storeId: storeId2)
+
+        let result1 = self.addMovement(mockMovement: mockMovement1)
+        let result2 = self.addMovement(mockMovement: mockMovement2)
+        let result3 = self.addMovement(mockMovement: mockMovement3)
+        let result4 = self.addMovement(mockMovement: mockMovement4)
+
+        XCTAssertNil(result1.error)
+        XCTAssertNil(result2.error)
+        XCTAssertNil(result3.error)
+        XCTAssertNil(result4.error)
+
+        // query sum
+        let query = ReadMovementsQuery(fromDate: Date(timeIntervalSince1970: 0),
+                                       toDate: Date())
+
+        var sum = try dataSource
+            .getMovementSumByStore(query: query)
+            .wait(timeout: 5)
+            .single()
+
+        XCTAssertEqual(sum.count, 2)
+
+        sum.sort(by: { $0.sum < $1.sum })
+
+        guard let firstElement = sum.first else {
+            XCTFail("Couldn't get first array value")
+            return
+        }
+
+        guard let lastElement = sum.last else {
+            XCTFail("Couldn't get last array value")
+            return
+        }
+
+        XCTAssertEqual(firstElement.id, storeId1)
+        XCTAssertEqual(firstElement.sum, mockMovement1.amount + mockMovement2.amount)
+
+        XCTAssertEqual(lastElement.id, storeId2)
+        XCTAssertEqual(lastElement.sum, mockMovement3.amount + mockMovement4.amount)
+    }
+
+    func testGetMovementSumByStoreTimeInterval() throws {
+        guard let dataSource = self.sut else {
+            XCTFail("Data source is not initialized")
+            return
+        }
+
+        let dateFormat = DateFormatter()
+        dateFormat.dateFormat = "yyyy-MM-dd"
+        guard let movementDate = dateFormat.date(from: "2018-02-01"),
+            let startingDate = dateFormat.date(from: "2019-01-01") else {
+            XCTFail("Can't get dates")
+            return
+        }
+
+        // create and add mock movements
+
+        let storeId1 = UUID()
+        let storeId2 = UUID()
+        let mockMovement1 = MockMovement(amount: 100, date: movementDate, storeId: storeId1)
+        let mockMovement2 = MockMovement(amount: 200, date: movementDate, storeId: storeId2)
+        let mockMovement3 = MockMovement(amount: 300, storeId: storeId1)
+        let mockMovement4 = MockMovement(amount: 400, storeId: storeId2)
+
+        let result1 = self.addMovement(mockMovement: mockMovement1)
+        let result2 = self.addMovement(mockMovement: mockMovement2)
+        let result3 = self.addMovement(mockMovement: mockMovement3)
+        let result4 = self.addMovement(mockMovement: mockMovement4)
+
+        XCTAssertNil(result1.error)
+        XCTAssertNil(result2.error)
+        XCTAssertNil(result3.error)
+        XCTAssertNil(result4.error)
+
+        // query sum
+        let query = ReadMovementsQuery(fromDate: startingDate,
+                                       toDate: Date())
+
+        var sum = try dataSource
+            .getMovementSumByStore(query: query)
+            .wait(timeout: 5)
+            .single()
+
+        XCTAssertEqual(sum.count, 2)
+
+        sum.sort(by: { $0.sum < $1.sum })
+
+        guard let firstElement = sum.first else {
+            XCTFail("Couldn't get first array value")
+            return
+        }
+
+        guard let lastElement = sum.last else {
+            XCTFail("Couldn't get last array value")
+            return
+        }
+
+        XCTAssertEqual(firstElement.id, storeId1)
+        XCTAssertEqual(firstElement.sum, mockMovement3.amount)
+
+        XCTAssertEqual(lastElement.id, storeId2)
+        XCTAssertEqual(lastElement.sum, mockMovement4.amount)
+    }
+
     // MARK: - Private functions
 
     private func addMovement(mockMovement: MockMovement) -> PublisherResult<Void, Error> {

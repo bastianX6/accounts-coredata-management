@@ -23,6 +23,7 @@ class AccountMovement: NSManagedObject {
         self.amount = movement.amount
         self.date = movement.date
         self.isPaid = movement.isPaid
+        self.isPermanent = movement.isPermanent
         self.storeId = movement.storeId
         self.categoryId = movement.categoryId
         self.paymentId = movement.paymentId

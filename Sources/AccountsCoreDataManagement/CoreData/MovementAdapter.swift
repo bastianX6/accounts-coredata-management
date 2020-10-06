@@ -15,6 +15,7 @@ struct MovementAdapter: Movement {
     let amount: Float
     let date: Date
     let isPaid: Bool
+    let isPermanent: Bool
     let storeId: UUID
     let categoryId: UUID
     let paymentId: UUID?
@@ -31,6 +32,7 @@ struct MovementAdapter: Movement {
         self.amount = movement.amount
         self.date = date
         self.isPaid = movement.isPaid
+        self.isPermanent = movement.isPermanent
         self.storeId = storeId
         self.categoryId = categoryId
         self.paymentId = movement.paymentId
